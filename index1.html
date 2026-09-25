@@ -1047,1830 +1047,951 @@ button{
 </div>
 
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
+const SUPABASE_URL = "https://yqwkncteoumuiuupbvtd.supabase.co";
+const SUPABASE_KEY = "sb_publishable_JCRzVYdLNQItdkyj7nX3bQ_6mdzDDNd";
 
-/* ==================================================
-   STORAGE KEYS
-================================================== */
+const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
-const USERS_KEY =
-    "luckoraUsers";
+let currentUser = null;
+let currentProfile = null;
+let currentDraws = [];
 
-const CURRENT_USER_KEY =
-    "luckoraCurrentUser";
+/* =========================
+   HELPERS
+========================= */
 
-const TICKETS_KEY =
-    "luckoraTickets";
+function normalizePhone(phone) {
+    phone = String(phone || "").trim().replace(/\s+/g, "");
 
-const DRAWS_KEY =
-    "luckoraDraws";
-
-const ADMIN_KEY =
-    "luckoraAdmin";
-
-
-/* ==================================================
-   STORAGE HELPERS
-================================================== */
-
-function getUsers(){
-
-    try{
-
-        const data =
-            localStorage.getItem(USERS_KEY);
-
-        if(!data) return [];
-
-        const users =
-            JSON.parse(data);
-
-        return Array.isArray(users)
-            ? users
-            : [];
-
-    }catch(e){
-
-        return [];
-    }
-}
-
-
-function saveUsers(users){
-
-    localStorage.setItem(
-        USERS_KEY,
-        JSON.stringify(users)
-    );
-
-}
-
-
-function getTickets(){
-
-    try{
-
-        const data =
-            localStorage.getItem(TICKETS_KEY);
-
-        if(!data) return [];
-
-        const tickets =
-            JSON.parse(data);
-
-        return Array.isArray(tickets)
-            ? tickets
-            : [];
-
-    }catch(e){
-
-        return [];
+    if (phone.startsWith("09")) {
+        return "+98" + phone.substring(1);
     }
 
-}
-
-
-function saveTickets(tickets){
-
-    localStorage.setItem(
-        TICKETS_KEY,
-        JSON.stringify(tickets)
-    );
-
-}
-
-
-function getDraws(){
-
-    try{
-
-        const data =
-            localStorage.getItem(DRAWS_KEY);
-
-        if(!data) return [];
-
-        const draws =
-            JSON.parse(data);
-
-        return Array.isArray(draws)
-            ? draws
-            : [];
-
-    }catch(e){
-
-        return [];
+    if (phone.startsWith("9") && phone.length === 10) {
+        return "+98" + phone;
     }
 
-}
-
-
-function saveDraws(draws){
-
-    localStorage.setItem(
-        DRAWS_KEY,
-        JSON.stringify(draws)
-    );
-
-}
-
-
-function makeId(){
-
-    return Date.now().toString(36)
-        +
-        Math.random()
-        .toString(36)
-        .substring(2,8);
-
-}
-
-
-/* ==================================================
-   DIGIT / PHONE
-================================================== */
-
-function normalizeDigits(value){
-
-    return String(value || "")
-    .replace(/[۰-۹]/g,function(d){
-
-        return String(
-            "۰۱۲۳۴۵۶۷۸۹".indexOf(d)
-        );
-
-    })
-    .replace(/[٠-٩]/g,function(d){
-
-        return String(
-            "٠١٢٣٤٥٦٧٨٩".indexOf(d)
-        );
-
-    });
-
-}
-
-
-function normalizePhone(value){
-
-    let phone =
-        normalizeDigits(value);
-
-    phone =
-        phone
-        .replace(/\s/g,"")
-        .replace(/-/g,"")
-        .replace(/\(/g,"")
-        .replace(/\)/g,"");
-
-    if(phone.startsWith("+98")){
-
-        phone =
-            "0" +
-            phone.substring(3);
-
+    if (phone.startsWith("0098")) {
+        return "+" + phone.substring(2);
     }
 
     return phone;
-
 }
 
-
-/* ==================================================
-   AUTH TABS
-================================================== */
-
-const loginTab =
-    document.getElementById("loginTab");
-
-const registerTab =
-    document.getElementById("registerTab");
-
-const loginForm =
-    document.getElementById("loginForm");
-
-const registerForm =
-    document.getElementById("registerForm");
-
-const adminLoginForm =
-    document.getElementById("adminLoginForm");
-
-
-function clearMessages(){
-
-    document.getElementById(
-        "loginMessage"
-    ).textContent = "";
-
-    document.getElementById(
-        "registerMessage"
-    ).textContent = "";
-
-    document.getElementById(
-        "adminLoginMessage"
-    ).textContent = "";
-
+function escapeHTML(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
+function money(value) {
+    return Number(value || 0).toLocaleString("fa-IR");
+}
 
-loginTab.addEventListener(
-    "click",
-    function(){
+function showMessage(message, type = "error") {
+    alert(message);
+}
 
-        loginTab.classList.add("active");
+async function getSession() {
+    const { data, error } = await supabaseClient.auth.getSession();
 
-        registerTab.classList.remove("active");
-
-        loginForm.classList.add("active");
-
-        registerForm.classList.remove("active");
-
-        adminLoginForm.classList.remove("active");
-
-        clearMessages();
-
+    if (error) {
+        console.error(error);
+        return null;
     }
-);
 
+    return data.session;
+}
 
-registerTab.addEventListener(
-    "click",
-    function(){
+async function loadProfile(userId) {
+    const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
 
-        registerTab.classList.add("active");
-
-        loginTab.classList.remove("active");
-
-        registerForm.classList.add("active");
-
-        loginForm.classList.remove("active");
-
-        adminLoginForm.classList.remove("active");
-
-        clearMessages();
-
+    if (error) {
+        console.error("Profile error:", error);
+        return null;
     }
-);
 
+    return data;
+}
 
-/* ==================================================
-   REGISTER
-================================================== */
+/* =========================
+   AUTH
+========================= */
 
-registerForm.addEventListener(
-    "submit",
-    function(event){
+async function registerUser() {
+    const name =
+        document.querySelector("#registerName")?.value.trim() || "";
 
-        event.preventDefault();
+    const phone =
+        document.querySelector("#registerPhone")?.value.trim() || "";
 
-        const message =
-            document.getElementById(
-                "registerMessage"
-            );
+    const password =
+        document.querySelector("#registerPassword")?.value || "";
 
-        try{
+    const confirmPassword =
+        document.querySelector("#registerConfirmPassword")?.value || "";
 
-            const name =
-                document.getElementById(
-                    "registerName"
-                ).value.trim();
+    if (!name || !phone || !password) {
+        showMessage("لطفاً همه اطلاعات را وارد کن.");
+        return;
+    }
 
-            const phone =
-                normalizePhone(
-                    document.getElementById(
-                        "registerPhone"
-                    ).value
-                );
+    if (password !== confirmPassword) {
+        showMessage("تکرار رمز عبور درست نیست.");
+        return;
+    }
 
-            const password =
-                document.getElementById(
-                    "registerPassword"
-                ).value;
+    if (password.length < 6) {
+        showMessage("رمز عبور باید حداقل ۶ کاراکتر باشد.");
+        return;
+    }
 
-            const password2 =
-                document.getElementById(
-                    "registerPassword2"
-                ).value;
+    const normalizedPhone = normalizePhone(phone);
 
-
-            if(name.length < 2){
-
-                showError(
-                    message,
-                    "لطفاً نام خود را وارد کنید."
-                );
-
-                return;
+    const { data, error } = await supabaseClient.auth.signUp({
+        phone: normalizedPhone,
+        password: password,
+        options: {
+            data: {
+                name: name,
+                phone: normalizedPhone
             }
-
-
-            if(!/^09\d{9}$/.test(phone)){
-
-                showError(
-                    message,
-                    "شماره موبایل صحیح نیست."
-                );
-
-                return;
-            }
-
-
-            if(password.length < 6){
-
-                showError(
-                    message,
-                    "رمز باید حداقل ۶ کاراکتر باشد."
-                );
-
-                return;
-            }
-
-
-            if(password !== password2){
-
-                showError(
-                    message,
-                    "رمزها یکسان نیستند."
-                );
-
-                return;
-            }
-
-
-            const users =
-                getUsers();
-
-
-            if(
-                users.some(
-                    u => u.phone === phone
-                )
-            ){
-
-                showError(
-                    message,
-     "این شماره قبلاً ثبت شده است."
-                );
-
-                return;
-            }
-
-
-            const user = {
-
-                id:makeId(),
-
-                name:name,
-
-                phone:phone,
-
-                password:password,
-
-                createdAt:
-                    new Date().toISOString()
-
-            };
-
-
-            users.push(user);
-
-            saveUsers(users);
-
-
-            localStorage.setItem(
-                CURRENT_USER_KEY,
-                user.id
-            );
-
-
-            message.className =
-                "message success";
-
-            message.textContent =
-                "✅ حساب با موفقیت ساخته شد.";
-
-
-            setTimeout(
-                () => openUserApp(user),
-                400
-            );
-
-        }catch(error){
-
-            showError(
-                message,
-                "خطا: " + error.message
-            );
-
         }
+    });
 
+    if (error) {
+        console.error(error);
+        showMessage(error.message);
+        return;
     }
-);
 
-
-/* ==================================================
-   USER LOGIN
-================================================== */
-
-loginForm.addEventListener(
-    "submit",
-    function(event){
-
-        event.preventDefault();
-
-        const message =
-            document.getElementById(
-                "loginMessage"
-            );
-
-
-        const phone =
-            normalizePhone(
-                document.getElementById(
-                    "loginPhone"
-                ).value
-            );
-
-        const password =
-            document.getElementById(
-                "loginPassword"
-            ).value;
-
-
-        const user =
-            getUsers().find(
-                u =>
-                    u.phone === phone &&
-                    u.password === password
-            );
-
-
-        if(!user){
-
-            showError(
-                message,
-                "شماره یا رمز عبور اشتباه است."
-            );
-
-            return;
-        }
-
-
-        localStorage.setItem(
-            CURRENT_USER_KEY,
-            user.id
+    if (!data.session) {
+        showMessage(
+            "ثبت‌نام انجام شد. اگر تأیید شماره موبایل در Supabase فعال باشد، باید شماره‌ات را تأیید کنی."
         );
-
-
-        openUserApp(user);
-
+        return;
     }
-);
 
+    currentUser = data.user;
+    currentProfile = await loadProfile(data.user.id);
 
-/* ==================================================
-   ADMIN LOGIN
-================================================== */
+    showMessage("ثبت‌نام با موفقیت انجام شد.", "success");
 
-document.getElementById(
-    "openAdminLogin"
-).addEventListener(
-    "click",
-    function(){
-
-        loginForm.classList.remove("active");
-
-        registerForm.classList.remove("active");
-
-        document.getElementById(
-            "authTabs"
-        ).style.display = "none";
-
-        adminLoginForm.classList.add("active");
-
-        clearMessages();
-
+    if (typeof showUserApp === "function") {
+        showUserApp();
+    } else if (typeof openUserApp === "function") {
+        openUserApp();
     }
-);
-
-
-document.getElementById(
-    "backToUserLogin"
-).addEventListener(
-    "click",
-    function(){
-
-        adminLoginForm.classList.remove("active");
-
-        loginForm.classList.add("active");
-
-        document.getElementById(
-            "authTabs"
-        ).style.display = "flex";
-
-        clearMessages();
-
-    }
-);
-
-
-adminLoginForm.addEventListener(
-    "submit",
-    function(event){
-
-        event.preventDefault();
-
-
-        const username =
-            document.getElementById(
-                "adminUsername"
-            ).value.trim();
-
-        const password =
-            document.getElementById(
-                "adminPassword"
-            ).value;
-
-
-        /*
-          DEMO ADMIN
-          برای نسخه واقعی باید
-          احراز هویت سمت سرور باشد.
-        */
-
-        if(
-            username === "admin" &&
-            password === "123456"
-        ){
-
-            localStorage.setItem(
-                ADMIN_KEY,
-                "true"
-            );
-
-            openAdmin();
-
-        }else{
-
-            showError(
-                document.getElementById(
-                    "adminLoginMessage"
-                ),
-                "نام کاربری یا رمز مدیر اشتباه است."
-            );
-
-        }
-
-    }
-);
-
-
-/* ==================================================
-   MESSAGE
-================================================== */
-
-function showError(element,text){
-
-    element.className =
-        "message error";
-
-    element.textContent =
-        text;
-
 }
 
+async function loginUser() {
+    const phone =
+        document.querySelector("#loginPhone")?.value.trim() || "";
 
-/* ==================================================
-   CURRENT USER
-================================================== */
+    const password =
+        document.querySelector("#loginPassword")?.value || "";
 
-function getCurrentUser(){
-
-    const id =
-        localStorage.getItem(
-            CURRENT_USER_KEY
-        );
-
-    if(!id) return null;
-
-    return getUsers().find(
-        u => u.id === id
-    ) || null;
-
-}
-
-
-/* ==================================================
-   USER APP
-================================================== */
-
-function openUserApp(user){
-
-    document.getElementById(
-        "authPage"
-    ).style.display = "none";
-
-    document.getElementById(
-        "adminPage"
-    ).style.display = "none";
-
-    document.getElementById(
-        "mainPage"
-    ).style.display = "block";
-
-
-    document.getElementById(
-        "welcomeUser"
-    ).textContent =
-        "سلام " + user.name;
-
-
-    document.getElementById(
-        "profileName"
-    ).textContent =
-        user.name;
-
-
-    document.getElementById(
-        "profilePhone"
-    ).textContent =
-        user.phone;
-
-
-    document.getElementById(
-        "avatar"
-    ).textContent =
-        user.name.charAt(0);
-
-
-    renderUserDraws();
-
-    updateTickets();
-
-    updateProfile();
-
-}
-
-
-/* ==================================================
-   USER LOGOUT
-================================================== */
-
-document.getElementById(
-    "logoutBtn"
-).addEventListener(
-    "click",
-    function(){
-
-        localStorage.removeItem(
-            CURRENT_USER_KEY
-        );
-
-        document.getElementById(
-            "mainPage"
-        ).style.display = "none";
-
-        document.getElementById(
-            "authPage"
-        ).style.display = "flex";
-
-        loginForm.reset();
-
-        registerForm.reset();
-
+    if (!phone || !password) {
+        showMessage("شماره موبایل و رمز عبور را وارد کن.");
+        return;
     }
-);
 
-
-/* ==================================================
-   USER NAVIGATION
-================================================== */
-
-document.querySelectorAll(
-    ".nav button"
-).forEach(
-    function(button){
-
-        button.addEventListener(
-            "click",
-            function(){
-
-                const target =
-                    button.dataset.page;
-
-
-                document.querySelectorAll(
-                    ".page"
-                ).forEach(
-                    page =>
-                        page.classList.remove(
-                            "active"
-                        )
-                );
-
-
-                document.getElementById(
-                    target
-                ).classList.add(
-                    "active"
-                );
-
-
-                document.querySelectorAll(
-                    ".nav button"
-                ).forEach(
-                    btn =>
-                        btn.classList.remove(
-                            "active"
-                        )
-                );
-
-
-                button.classList.add(
-                    "active"
-                );
-
-
-                if(
-                    target === "ticketsPage"
-                ){
-
-                    updateTickets();
-
-                }
-
-            }
-        );
-
-    }
-);
-
-
-/* ==================================================
-   DEFAULT DRAW
-================================================== */
-
-function ensureDefaultDraw(){
-
-    const draws =
-        getDraws();
-
-
-    if(draws.length === 0){
-
-        draws.push({
-
-            id:"default-car",
-
-            title:"قرعه‌کشی خودروی ویژه",
-
-            prize:"خودروی ویژه",
-
-            price:50000,
-
-            date:"",
-
-            active:true,
-
-            createdAt:
-                new Date().toISOString()
-
+    const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+            phone: normalizePhone(phone),
+            password: password
         });
 
-
-        saveDraws(draws);
-
-    }
-
-}
-
-
-/* ==================================================
-   USER DRAW LIST
-================================================== */
-
-function renderUserDraws(){
-
-    ensureDefaultDraw();
-
-
-    const draws =
-        getDraws().filter(
-            d => d.active !== false
-        );
-
-
-    const html =
-        draws.map(
-            draw => `
-
-            <div class="card">
-
-                <div class="cardTop">
-
-                    <strong>
-                        ${escapeHTML(draw.title)}
-                    </strong>
-
-                    <span class="badge">
-                        فعال
-                    </span>
-
-                </div>
-
-                <div class="price">
-                    ${Number(draw.price || 0).toLocaleString("fa-IR")}
-                    تومان
-                </div>
-
-                <p>
-                    جایزه:
-                    ${escapeHTML(draw.prize)}
-                </p>
-
-                <button
-                    class="buyBtn"
-                    onclick="buyTicket('${draw.id}')">
-
-                    🎟️ خرید بلیت
-
-                </button>
-
-            </div>
-
-        `
-        ).join("");
-
-
-    document.getElementById(
-        "userDrawList"
-    ).innerHTML =
-        html || `
-            <div class="empty">
-                قرعه‌کشی فعالی وجود ندارد.
-            </div>
-        `;
-
-
-    document.getElementById(
-        "drawsList"
-    ).innerHTML =
-        html || `
-            <div class="empty">
-                قرعه‌کشی فعالی وجود ندارد.
-            </div>
-        `;
-
-}
-
-
-/* ==================================================
-   BUY TICKET
-================================================== */
-
-function buyTicket(drawId){
-
-    const user =
-        getCurrentUser();
-
-
-    if(!user){
-
-        alert(
-            "ابتدا وارد حساب شوید."
-        );
-
+    if (error) {
+        console.error(error);
+        showMessage("شماره موبایل یا رمز عبور اشتباه است.");
         return;
-
     }
 
+    currentUser = data.user;
+    currentProfile = await loadProfile(data.user.id);
 
-    ensureDefaultDraw();
+    if (!currentProfile) {
+        showMessage("پروفایل کاربر پیدا نشد.");
+        return;
+    }
 
+    if (typeof showUserApp === "function") {
+        showUserApp();
+    } else if (typeof openUserApp === "function") {
+        openUserApp();
+    }
 
-    const draws =
-        getDraws();
+    await loadUserData();
+}
 
+async function loginAdmin() {
+    const username =
+        document.querySelector("#adminUsername")?.value.trim() || "";
 
-    const draw =
-        draws.find(
-            d => d.id === drawId
-        )
-        ||
-        draws[0];
+    const password =
+        document.querySelector("#adminPassword")?.value || "";
 
+    if (!username || !password) {
+        showMessage("شماره موبایل و رمز عبور مدیر را وارد کن.");
+        return;
+    }
 
-    const tickets =
-        getTickets();
+    const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+            phone: normalizePhone(username),
+            password: password
+        });
 
+    if (error) {
+        console.error(error);
+        showMessage("اطلاعات ورود مدیر اشتباه است.");
+        return;
+    }
 
-    const ticket = {
+    const profile = await loadProfile(data.user.id);
 
-        id:makeId(),
+    if (!profile || profile.role !== "admin") {
+        await supabaseClient.auth.signOut();
+        showMessage("این حساب دسترسی مدیر ندارد.");
+        return;
+    }
 
-        userId:user.id,
+    currentUser = data.user;
+    currentProfile = profile;
 
-        drawId:draw.id,
+    sessionStorage.setItem("luckoraAdminMode", "1");
 
-        drawTitle:draw.title,
+    if (typeof openAdminPanel === "function") {
+        openAdminPanel();
+    } else if (typeof showAdminPanel === "function") {
+        showAdminPanel();
+    }
 
-        number:
-            Math.floor(
-                100000 +
-                Math.random()*900000
-            ),
+    await loadAdminData();
+}
 
-        price:Number(draw.price || 0),
+async function logout() {
+    await supabaseClient.auth.signOut();
 
-        createdAt:
-            new Date().toLocaleString(
-                "fa-IR"
-            )
+    currentUser = null;
+    currentProfile = null;
 
-    };
+    sessionStorage.removeItem("luckoraAdminMode");
 
+    location.reload();
+}
 
-    tickets.push(ticket);
+/* =========================
+   DRAWS
+========================= */
 
-    saveTickets(tickets);
+async function loadDraws() {
+    const { data, error } = await supabaseClient
+        .from("draws")
+        .select("*")
+        .eq("active", true)
+        .order("created_at", { ascending: false });
 
+    if (error) {
+        console.error(error);
+        return [];
+    }
 
-    alert(
-        "🎟️ بلیت ثبت شد!\n\n" +
-        "شماره بلیت: " +
-        ticket.number
+    currentDraws = data || [];
+
+    return currentDraws;
+}
+
+async function renderDraws() {
+    const draws = await loadDraws();
+
+    const container =
+        document.querySelector("#drawsContainer") ||
+        document.querySelector("#drawsList");
+
+    if (!container) return;
+
+    if (!draws.length) {
+        container.innerHTML =
+            `<div>در حال حاضر قرعه‌کشی فعالی وجود ندارد.</div>`;
+        return;
+    }
+
+    container.innerHTML = draws.map(draw => `
+        <div class="draw-card">
+            <h3>${escapeHTML(draw.title)}</h3>
+
+            <p>
+                جایزه:
+                <strong>${escapeHTML(draw.prize)}</strong>
+            </p>
+
+            <p>
+                قیمت بلیت:
+                <strong>${money(draw.price)} تومان</strong>
+            </p>
+
+            ${
+                draw.end_at
+                    ? `<p>پایان: ${new Date(draw.end_at).toLocaleString("fa-IR")}</p>`
+                    : ""
+            }
+
+            <button onclick="buyTicket('${draw.id}')">
+                خرید بلیت
+            </button>
+        </div>
+    `).join("");
+}
+
+/* =========================
+   BUY TICKET
+========================= */
+
+async function buyTicket(drawId) {
+    const session = await getSession();
+
+    if (!session) {
+        showMessage("ابتدا وارد حساب کاربری شو.");
+        return;
+    }
+
+    const response = await fetch(
+        `${SUPABASE_URL}/functions/v1/buy-ticket`,
+        {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${session.access_token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                draw_id: drawId
+            })
+        }
     );
 
+    const result = await response.json();
 
-    updateTickets();
+    if (!response.ok) {
+        console.error(result);
+        showMessage(result.error || "خرید بلیت انجام نشد.");
+        return;
+    }
 
-    updateProfile();
+    showMessage(
+        `بلیت با موفقیت خریداری شد.\n\nشماره بلیت: ${result.ticket.number}`,
+        "success"
+    );
 
+    await loadTickets();
 }
 
-
-/* ==================================================
+/* =========================
    USER TICKETS
-================================================== */
+========================= */
 
-function updateTickets(){
+async function loadTickets() {
+    if (!currentUser) return [];
 
-    const user =
-        getCurrentUser();
+    const { data, error } = await supabaseClient
+        .from("tickets")
+        .select(`
+            id,
+            number,
+            price,
+            created_at,
+            draw_id,
+            draws (
+                title,
+                prize
+            )
+        `)
+        .eq("user_id", currentUser.id)
+        .order("created_at", { ascending: false });
 
-    if(!user) return;
-
-
-    const tickets =
-        getTickets().filter(
-            t => t.userId === user.id
-        );
-
-
-    document.getElementById(
-        "ticketCount"
-    ).textContent =
-        tickets.length;
-
-
-    const list =
-        document.getElementById(
-            "ticketsList"
-        );
-
-
-    if(tickets.length === 0){
-
-        list.innerHTML = `
-            <div class="empty">
-                هنوز بلیتی ندارید.
-            </div>
-        `;
-
-        return;
+    if (error) {
+        console.error(error);
+        return [];
     }
 
+    const container =
+        document.querySelector("#ticketsContainer") ||
+        document.querySelector("#ticketsList");
 
-    list.innerHTML =
-        tickets.map(
-            ticket => `
+    if (!container) return data || [];
 
-            <div class="card">
+    if (!data?.length) {
+        container.innerHTML =
+            `<div>هنوز بلیتی خریداری نکرده‌ای.</div>`;
+        return [];
+    }
 
-                <div class="cardTop">
+    container.innerHTML = data.map(ticket => `
+        <div class="ticket-card">
+            <h3>بلیت ${escapeHTML(ticket.number)}</h3>
 
-                    <strong>
-                        🎟️ ${ticket.number}
-                    </strong>
+            <p>
+                قرعه‌کشی:
+                ${escapeHTML(ticket.draws?.title || "-")}
+            </p>
 
-                    <span class="badge">
-                        ثبت شده
-                    </span>
+            <p>
+                قیمت:
+                ${money(ticket.price)} تومان
+            </p>
 
-                </div>
+            <p>
+                تاریخ:
+                ${new Date(ticket.created_at).toLocaleString("fa-IR")}
+            </p>
+        </div>
+    `).join("");
 
-                <p>
-                    ${escapeHTML(
-                        ticket.drawTitle
-                    )}
-                </p>
-
-                <p>
-                    قیمت:
-                    ${Number(
-                        ticket.price || 0
-                    ).toLocaleString("fa-IR")}
-                    تومان
-                </p>
-
-                <p>
-                    ${ticket.createdAt}
-                </p>
-
-            </div>
-
-        `
-        ).join("");
-
+    return data;
 }
 
+/* =========================
+   WINNERS
+========================= */
 
-/* ==================================================
+async function loadWinners() {
+    const { data, error } = await supabaseClient
+        .from("winners")
+        .select(`
+            id,
+            created_at,
+            draws (
+                title,
+                prize
+            ),
+            tickets (
+                number
+            ),
+            profiles (
+                name,
+                phone
+            )
+        `)
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        console.error(error);
+        return [];
+    }
+
+    const container =
+        document.querySelector("#winnersContainer") ||
+        document.querySelector("#winnersList");
+
+    if (!container) return data || [];
+
+    if (!data?.length) {
+        container.innerHTML =
+            `<div>هنوز برنده‌ای ثبت نشده است.</div>`;
+        return [];
+    }
+
+    container.innerHTML = data.map(winner => `
+        <div class="winner-card">
+            <h3>${escapeHTML(winner.draws?.title || "قرعه‌کشی")}</h3>
+
+            <p>
+                برنده:
+                ${escapeHTML(winner.profiles?.name || "-")}
+            </p>
+
+            <p>
+                شماره بلیت:
+                ${escapeHTML(winner.tickets?.number || "-")}
+            </p>
+
+            <p>
+                جایزه:
+                ${escapeHTML(winner.draws?.prize || "-")}
+            </p>
+        </div>
+    `).join("");
+
+    return data;
+}
+
+/* =========================
    PROFILE
-================================================== */
+========================= */
 
-function updateProfile(){
+async function loadProfileData() {
+    if (!currentUser) return;
 
-    const user =
-        getCurrentUser();
+    currentProfile = await loadProfile(currentUser.id);
 
-    if(!user) return;
+    const nameElements = document.querySelectorAll(
+        "#profileName, #userName, [data-profile-name]"
+    );
 
+    nameElements.forEach(el => {
+        el.textContent = currentProfile?.name || "";
+    });
 
-    const count =
-        getTickets().filter(
-            t => t.userId === user.id
-        ).length;
+    const phoneElements = document.querySelectorAll(
+        "#profilePhone, #userPhone, [data-profile-phone]"
+    );
 
-
-    document.getElementById(
-        "ticketCount"
-    ).textContent =
-        count;
-
+    phoneElements.forEach(el => {
+        el.textContent = currentProfile?.phone || "";
+    });
 }
 
+/* =========================
+   ADMIN DATA
+========================= */
 
-/* ==================================================
-   ADMIN OPEN
-================================================== */
-
-function openAdmin(){
-
-    document.getElementById(
-        "authPage"
-    ).style.display = "none";
-
-    document.getElementById(
-        "mainPage"
-    ).style.display = "none";
-
-    document.getElementById(
-        "adminPage"
-    ).style.display = "block";
-
-
-    ensureDefaultDraw();
-
-    renderAdmin();
-
-}
-
-
-/* ==================================================
-   ADMIN RENDER
-================================================== */
-
-function renderAdmin(){
-
-    const users =
-        getUsers();
-
-    const tickets =
-        getTickets();
-
-    const draws =
-        getDraws();
-
-
-    document.getElementById(
-        "statUsers"
-    ).textContent =
-        users.length;
-
-
-    document.getElementById(
-        "statTickets"
-    ).textContent =
-        tickets.length;
-
-
-    document.getElementById(
-        "statDraws"
-    ).textContent =
-        draws.length;
-
-
-    document.getElementById(
-        "statWinners"
-    ).textContent =
-        "0";
-
-
-    renderAdminUsers();
-
-    renderAdminTickets();
-
-    renderAdminDraws();
-
-}
-
-
-/* ==================================================
-   ADMIN TABS
-================================================== */
-
-document.querySelectorAll(
-    ".adminTabs button"
-).forEach(
-    button => {
-
-        button.addEventListener(
-            "click",
-            function(){
-
-                document.querySelectorAll(
-                    ".adminTabs button"
-                ).forEach(
-                    b =>
-                        b.classList.remove(
-                            "active"
-                        )
-                );
-
-
-                button.classList.add(
-                    "active"
-                );
-
-
-                document.querySelectorAll(
-                    ".adminSection"
-                ).forEach(
-                    section =>
-                        section.classList.remove(
-                            "active"
-                        )
-                );
-
-
-                document.getElementById(
-                    button.dataset.admin
-                ).classList.add(
-                    "active"
-                );
-
-            }
-        );
-
+async function loadAdminData() {
+    if (!currentProfile || currentProfile.role !== "admin") {
+        return;
     }
-);
 
+    await Promise.all([
+        loadAdminStats(),
+        loadAdminUsers(),
+        loadAdminTickets(),
+        loadAdminDraws()
+    ]);
+}
 
-/* ==================================================
+async function loadAdminStats() {
+    const [
+        users,
+        tickets,
+        draws,
+        winners
+    ] = await Promise.all([
+        supabaseClient
+            .from("profiles")
+            .select("*", { count: "exact", head: true }),
+
+        supabaseClient
+            .from("tickets")
+            .select("*", { count: "exact", head: true }),
+
+        supabaseClient
+            .from("draws")
+            .select("*", { count: "exact", head: true }),
+
+        supabaseClient
+            .from("winners")
+            .select("*", { count: "exact", head: true })
+    ]);
+
+    setAdminNumber(
+        ["#totalUsers", "#usersCount"],
+        users.count || 0
+    );
+
+    setAdminNumber(
+        ["#totalTickets", "#ticketsCount"],
+        tickets.count || 0
+    );
+
+    setAdminNumber(
+        ["#totalDraws", "#drawsCount"],
+        draws.count || 0
+    );
+
+    setAdminNumber(
+        ["#totalWinners", "#winnersCount"],
+        winners.count || 0
+    );
+}
+
+function setAdminNumber(selectors, value) {
+    selectors.forEach(selector => {
+        const el = document.querySelector(selector);
+
+        if (el) {
+            el.textContent = Number(value).toLocaleString("fa-IR");
+        }
+    });
+}
+
+/* =========================
    ADMIN USERS
-================================================== */
+========================= */
 
-function renderAdminUsers(){
+async function loadAdminUsers() {
+    const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-    const users =
-        getUsers();
-
-
-    const list =
-        document.getElementById(
-            "adminUsersList"
-        );
-
-
-    if(users.length === 0){
-
-        list.innerHTML = `
-            <div class="empty">
-                کاربری وجود ندارد.
-            </div>
-        `;
-
-        return;
+    if (error) {
+        console.error(error);
+        return [];
     }
 
+    const container =
+        document.querySelector("#usersContainer") ||
+        document.querySelector("#usersList");
 
-    list.innerHTML =
-        users.map(
-            (user,index) => {
+    if (!container) return data || [];
 
-                const ticketCount =
-                    getTickets().filter(
-                        t =>
-                            t.userId === user.id
-                    ).length;
+    if (!data?.length) {
+        container.innerHTML = "<div>کاربری وجود ندارد.</div>";
+        return [];
+    }
 
+    container.innerHTML = data.map(user => `
+        <div class="user-row">
+            <div>
+                <strong>${escapeHTML(user.name || "-")}</strong>
+                <div>${escapeHTML(user.phone || "-")}</div>
+            </div>
 
-                return `
+            <div>
+                <span>${escapeHTML(user.role)}</span>
+            </div>
+        </div>
+    `).join("");
 
-                <div class="userRow">
-
-                    <strong>
-                        👤 ${escapeHTML(user.name)}
-                    </strong>
-
-                    <div class="muted">
-                        موبایل:
-                        ${escapeHTML(user.phone)}
-                    </div>
-
-                    <div class="muted">
-                        تعداد بلیت:
-                        ${ticketCount}
-                    </div>
-
-                    <div class="muted">
-                        کاربر شماره:
-                        ${index + 1}
-                    </div>
-
-                    <button
-                        class="smallBtn danger"
-                        onclick="deleteUser('${user.id}')">
-
-                        حذف کاربر
-
-                    </button>
-
-                </div>
-
-                `;
-
-            }
-        ).join("");
-
+    return data;
 }
 
-
-/* ==================================================
-   DELETE USER
-================================================== */
-
-function deleteUser(userId){
-
-    const user =
-        getUsers().find(
-            u => u.id === userId
-        );
-
-
-    if(!user) return;
-
-
-    const ok =
-        confirm(
-            "آیا از حذف کاربر " +
-            user.name +
-            " مطمئن هستید؟\n\n" +
-            "بلیت‌های این کاربر نیز حذف می‌شوند."
-        );
-
-
-    if(!ok) return;
-
-
-    const users =
-        getUsers().filter(
-            u => u.id !== userId
-        );
-
-
-    saveUsers(users);
-
-
-    const tickets =
-        getTickets().filter(
-            t => t.userId !== userId
-        );
-
-
-    saveTickets(tickets);
-
-
-    renderAdmin();
-
-}
-
-
-/* ==================================================
+/* =========================
    ADMIN TICKETS
-================================================== */
+========================= */
 
-function renderAdminTickets(){
+async function loadAdminTickets() {
+    const { data, error } = await supabaseClient
+        .from("tickets")
+        .select(`
+            id,
+            number,
+            price,
+            created_at,
+            profiles (
+                name,
+                phone
+            ),
+            draws (
+                title
+            )
+        `)
+        .order("created_at", { ascending: false });
 
-    const tickets =
-        getTickets();
-
-
-    const users =
-        getUsers();
-
-
-    const list =
-        document.getElementById(
-            "adminTicketsList"
-        );
-
-
-    if(tickets.length === 0){
-
-        list.innerHTML = `
-            <div class="empty">
-                هنوز بلیتی ثبت نشده است.
-            </div>
-        `;
-
-        return;
-
+    if (error) {
+        console.error(error);
+        return [];
     }
 
+    const container =
+        document.querySelector("#adminTicketsContainer") ||
+        document.querySelector("#adminTicketsList");
 
-    list.innerHTML =
-        tickets.map(
-            ticket => {
+    if (!container) return data || [];
 
-                const user =
-                    users.find(
-                        u =>
-                            u.id === ticket.userId
-                    );
+    if (!data?.length) {
+        container.innerHTML = "<div>هنوز بلیتی ثبت نشده است.</div>";
+        return [];
+    }
 
+    container.innerHTML = data.map(ticket => `
+        <div class="ticket-row">
+            <strong>${escapeHTML(ticket.number)}</strong>
 
-                return `
+            <span>
+                ${escapeHTML(ticket.profiles?.name || "-")}
+            </span>
 
-                <div class="ticketRow">
+            <span>
+                ${escapeHTML(ticket.profiles?.phone || "-")}
+            </span>
 
-                    <strong>
-                        🎟️ بلیت ${ticket.number}
-                    </strong>
+            <span>
+                ${escapeHTML(ticket.draws?.title || "-")}
+            </span>
 
-                    <div class="muted">
-                        کاربر:
-                        ${
-                            user
-                            ? escapeHTML(user.name)
-                            : "نامشخص"
-                        }
-                    </div>
+            <span>
+                ${money(ticket.price)} تومان
+            </span>
+        </div>
+    `).join("");
 
-                    <div class="muted">
-                        موبایل:
-                        ${
-                            user
-                            ? escapeHTML(user.phone)
-                            : "-"
-                        }
-                    </div>
-
-                    <div class="muted">
-                        قرعه‌کشی:
-                        ${escapeHTML(
-                            ticket.drawTitle || "-"
-                        )}
-                    </div>
-
-                    <div class="muted">
-                        قیمت:
-                        ${Number(
-                            ticket.price || 0
-                        ).toLocaleString("fa-IR")}
-                        تومان
-                    </div>
-
-                    <div class="muted">
-                        ثبت:
-                        ${ticket.createdAt || "-"}
-                    </div>
-
-                </div>
-
-                `;
-
-            }
-        ).join("");
-
+    return data;
 }
 
-
-/*
-==================================================
-   CREATE DRAW
-================================================== */
-
-document.getElementById(
-    "createDrawBtn"
-).addEventListener(
-    "click",
-    function(){
-
-        const title =
-            document.getElementById(
-                "drawTitle"
-            ).value.trim();
-
-
-        const prize =
-            document.getElementById(
-                "drawPrize"
-            ).value.trim();
-
-
-        const price =
-            Number(
-                document.getElementById(
-                    "drawPrice"
-                ).value
-            );
-
-
-        const date =
-            document.getElementById(
-                "drawDate"
-            ).value;
-
-
-        const message =
-            document.getElementById(
-                "drawMessage"
-            );
-
-
-        if(!title){
-
-            showError(
-                message,
-                "عنوان قرعه‌کشی را وارد کنید."
-            );
-
-            return;
-
-        }
-
-
-        if(!prize){
-
-            showError(
-                message,
-                "جایزه را وارد کنید."
-            );
-
-            return;
-
-        }
-
-
-        if(!price || price <= 0){
-
-            showError(
-                message,
-                "قیمت بلیت معتبر نیست."
-            );
-
-            return;
-
-        }
-
-
-        const draws =
-            getDraws();
-
-
-        draws.push({
-
-            id:makeId(),
-
-            title:title,
-
-            prize:prize,
-
-            price:price,
-
-            date:date,
-
-            active:true,
-
-            createdAt:
-                new Date().toISOString()
-
-        });
-
-
-        saveDraws(draws);
-
-
-        message.className =
-            "message success";
-
-        message.textContent =
-            "✅ قرعه‌کشی ایجاد شد.";
-
-
-        document.getElementById(
-            "drawTitle"
-        ).value = "";
-
-        document.getElementById(
-            "drawPrize"
-        ).value = "";
-
-        document.getElementById(
-            "drawPrice"
-        ).value = "";
-
-        document.getElementById(
-            "drawDate"
-        ).value = "";
-
-
-        renderAdmin();
-
-        renderUserDraws();
-
-    }
-);
-
-
-/* ==================================================
+/* =========================
    ADMIN DRAWS
-================================================== */
+========================= */
 
-function renderAdminDraws(){
+async function loadAdminDraws() {
+    const { data, error } = await supabaseClient
+        .from("draws")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-    const draws =
-        getDraws();
-
-
-    const list =
-        document.getElementById(
-            "adminDrawsList"
-        );
-
-
-    if(draws.length === 0){
-
-        list.innerHTML = `
-            <div class="empty">
-                قرعه‌کشی وجود ندارد.
-            </div>
-        `;
-
-        return;
-
+    if (error) {
+        console.error(error);
+        return [];
     }
 
+    const container =
+        document.querySelector("#adminDrawsContainer") ||
+        document.querySelector("#adminDrawsList");
 
-    list.innerHTML =
-        draws.map(
-            draw => {
+    if (!container) return data || [];
 
-                const ticketCount =
-                    getTickets().filter(
-                        t =>
-                            t.drawId === draw.id
-                    ).length;
+    if (!data?.length) {
+        container.innerHTML =
+            "<div>هیچ قرعه‌کشی‌ای وجود ندارد.</div>";
+        return [];
+    }
 
+    container.innerHTML = data.map(draw => `
+        <div class="draw-admin-row">
 
-                return `
+            <div>
+                <strong>${escapeHTML(draw.title)}</strong>
 
-                <div class="card">
-
-                    <div class="cardTop">
-
-                        <strong>
-                            ${escapeHTML(draw.title)}
-                        </strong>
-
-                        <span class="badge">
-                            ${
-                                draw.active !== false
-                                ? "فعال"
-                                : "غیرفعال"
-                            }
-                        </span>
-
-                    </div>
-
-                    <p>
-                        🏆 جایزه:
-                        ${escapeHTML(draw.prize)}
-                    </p>
-
-                    <p>
-                        🎟️ قیمت:
-                        ${Number(
-                            draw.price || 0
-                        ).toLocaleString("fa-IR")}
-                        تومان
-                    </p>
-
-                    <p>
-                        🎟️ تعداد بلیت:
-                        ${ticketCount}
-                    </p>
-
-                    ${
-                        draw.date
-                        ?
-                        `<p>
-                            ⏰ پایان:
-                            ${escapeHTML(draw.date)}
-                        </p>`
-                        :
-                        ""
-                    }
-
-
-                    <button
-                        class="smallBtn danger"
-                        onclick="deleteDraw('${draw.id}')">
-
-                        حذف قرعه‌کشی
-
-                    </button>
-
+                <div>
+                    جایزه:
+                    ${escapeHTML(draw.prize)}
                 </div>
 
-                `;
+                <div>
+                    قیمت:
+                    ${money(draw.price)} تومان
+                </div>
+            </div>
 
-            }
-        ).join("");
+            <div>
+                ${
+                    draw.active
+                        ? "فعال"
+                        : "غیرفعال"
+                }
+            </div>
 
+            <button
+                onclick="deleteDraw('${draw.id}')"
+                type="button"
+            >
+                حذف
+            </button>
+
+        </div>
+    `).join("");
+
+    return data;
 }
 
+/* =========================
+   CREATE DRAW
+========================= */
 
-/* ==================================================
+async function createDraw() {
+    if (!currentProfile || currentProfile.role !== "admin") {
+        showMessage("دسترسی غیرمجاز.");
+        return;
+    }
+
+    const title =
+        document.querySelector("#drawTitle")?.value.trim() || "";
+
+    const prize =
+        document.querySelector("#drawPrize")?.value.trim() || "";
+
+    const price =
+        Number(
+            document.querySelector("#drawPrice")?.value || 0
+        );
+
+    const endAtValue =
+        document.querySelector("#drawEndAt")?.value || "";
+
+    if (!title || !prize || !price) {
+        showMessage("عنوان، جایزه و قیمت را وارد کن.");
+        return;
+    }
+
+    const insertData = {
+        title,
+        prize,
+        price,
+        active: true
+    };
+
+    if (endAtValue) {
+        insertData.end_at =
+            new Date(endAtValue).toISOString();
+    }
+
+    const { error } = await supabaseClient
+        .from("draws")
+        .insert(insertData);
+
+    if (error) {
+        console.error(error);
+        showMessage(error.message);
+        return;
+    }
+
+    showMessage("قرعه‌کشی با موفقیت ساخته شد.", "success");
+
+    const fields = [
+        "#drawTitle",
+        "#drawPrize",
+        "#drawPrice",
+        "#drawEndAt"
+    ];
+
+    fields.forEach(selector => {
+        const el = document.querySelector(selector);
+        if (el) el.value = "";
+    });
+
+    await loadAdminDraws();
+    await renderDraws();
+    await loadAdminStats();
+}
+
+/* =========================
    DELETE DRAW
-================================================== */
+========================= */
 
-function deleteDraw(drawId){
-
-    const draw =
-        getDraws().find(
-            d => d.id === drawId
-        );
-
-
-    if(!draw) return;
-
-
-    const ok =
-        confirm(
-            "آیا از حذف این قرعه‌کشی مطمئن هستید؟"
-        );
-
-
-    if(!ok) return;
-
-
-    const draws =
-        getDraws().filter(
-            d => d.id !== drawId
-        );
-
-
-    saveDraws(draws);
-
-
-    renderAdmin();
-
-    renderUserDraws();
-
-}
-
-
-/* ==================================================
-   ADMIN LOGOUT
-================================================== */
-
-document.getElementById(
-    "adminLogout"
-).addEventListener(
-    "click",
-    function(){
-
-        localStorage.removeItem(
-            ADMIN_KEY
-        );
-
-
-        document.getElementById(
-            "adminPage"
-        ).style.display = "none";
-
-
-        document.getElementById(
-            "authPage"
-        ).style.display = "flex";
-
-
-        document.getElementById(
-            "authTabs"
-        ).style.display = "flex";
-
-
-        adminLoginForm.classList.remove(
-            "active"
-        );
-
-        loginForm.classList.add(
-            "active"
-        );
-
-
-        document.getElementById(
-            "adminUsername"
-        ).value = "";
-
-        document.getElementById(
-            "adminPassword"
-        ).value = "";
-
+async function deleteDraw(drawId) {
+    if (!currentProfile || currentProfile.role !== "admin") {
+        showMessage("دسترسی غیرمجاز.");
+        return;
     }
-);
 
+    const ok = confirm(
+        "با حذف این قرعه‌کشی، بلیت‌های مربوط به آن هم حذف می‌شوند. ادامه می‌دهی؟"
+    );
 
-/* ==================================================
-   SECURITY HELPER
-================================================== */
+    if (!ok) return;
 
-function escapeHTML(value){
+    const { error } = await supabaseClient
+        .from("draws")
+        .delete()
+        .eq("id", drawId);
 
-    return String(value ?? "")
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
+    if (error) {
+        console.error(error);
+        showMessage(error.message);
+        return;
+    }
 
+    showMessage("قرعه‌کشی حذف شد.", "success");
+
+    await loadAdminDraws();
+    await renderDraws();
+    await loadAdminStats();
 }
 
+/* =========================
+   APP LOADING
+========================= */
 
-/* ==================================================
-   STARTUP
-================================================== */
+async function loadUserData() {
+    await Promise.all([
+        renderDraws(),
+        loadTickets(),
+        loadWinners(),
+        loadProfileData()
+    ]);
+}
 
-window.addEventListener(
-    "DOMContentLoaded",
-    function(){
+async function initializeLuckora() {
+    const session = await getSession();
 
-        ensureDefaultDraw();
+    if (!session) {
+        currentUser = null;
+        currentProfile = null;
+        return;
+    }
 
+    currentUser = session.user;
+    currentProfile = await loadProfile(session.user.id);
 
-        const currentUser =
-            getCurrentUser();
+    if (!currentProfile) {
+        await supabaseClient.auth.signOut();
+        return;
+    }
 
+    if (
+        currentProfile.role === "admin" &&
+        sessionStorage.getItem("luckoraAdminMode") === "1"
+    ) {
+        if (typeof openAdminPanel === "function") {
+            openAdminPanel();
+        } else if (typeof showAdminPanel === "function") {
+            showAdminPanel();
+        }
 
-        const isAdmin =
-            localStorage.getItem(
-                ADMIN_KEY
-            );
+        await loadAdminData();
+    } else {
+        if (typeof showUserApp === "function") {
+            showUserApp();
+        } else if (typeof openUserApp === "function") {
+            openUserApp();
+        }
 
+        await loadUserData();
+    }
+}
 
-        if(isAdmin === "true"){
+/* =========================
+   AUTH STATE
+========================= */
 
-            openAdmin();
+supabaseClient.auth.onAuthStateChange(
+    async (event, session) => {
 
+        if (event === "SIGNED_OUT") {
+            currentUser = null;
+            currentProfile = null;
             return;
-
         }
 
+        if (session?.user) {
+            currentUser = session.user;
 
-        if(currentUser){
-
-            openUserApp(
-                currentUser
-            );
-
+            setTimeout(async () => {
+                currentProfile =
+                    await loadProfile(session.user.id);
+            }, 0);
         }
-
     }
 );
 
-</script>
+/* =========================
+   ADMIN LOGIN LABEL
+========================= */
 
+document.addEventListener("DOMContentLoaded", () => {
+
+    const adminInput =
+        document.querySelector("#adminUsername");
+
+    if (adminInput) {
+        adminInput.placeholder = "شماره موبایل مدیر";
+    }
+
+    initializeLuckora();
+});
+</script>
 </body>
 </html>
