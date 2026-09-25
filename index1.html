@@ -1,0 +1,2876 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUCKORA</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Tahoma,Arial,sans-serif;
+    background:#080808;
+    color:#fff;
+    min-height:100vh;
+}
+
+button,input,select{
+    font-family:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+.app{
+    max-width:480px;
+    margin:auto;
+    min-height:100vh;
+    background:radial-gradient(circle at top,#2a2108 0,#080808 35%);
+}
+
+/* ================= AUTH ================= */
+
+#authPage{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:25px;
+}
+
+.authBox{
+    width:100%;
+    background:#111;
+    border:1px solid #3c300c;
+    border-radius:28px;
+    padding:28px 22px;
+    box-shadow:0 20px 60px #000;
+}
+
+.logo{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.logo h1{
+    color:#d4af37;
+    font-size:36px;
+    letter-spacing:2px;
+}
+
+.logo p{
+    color:#aaa;
+    margin-top:7px;
+    font-size:13px;
+}
+
+.tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:22px;
+}
+
+.tab{
+    flex:1;
+    padding:13px;
+    border:0;
+    border-radius:12px;
+    background:#1d1d1d;
+    color:#aaa;
+}
+
+.tab.active{
+    background:#d4af37;
+    color:#000;
+    font-weight:bold;
+}
+
+.form{
+    display:none;
+}
+
+.form.active{
+    display:block;
+}
+
+.field{
+    margin-bottom:15px;
+}
+
+.field label{
+    display:block;
+    color:#bbb;
+    font-size:13px;
+    margin-bottom:7px;
+}
+
+.field input,
+.field select{
+    width:100%;
+    padding:14px;
+    border-radius:12px;
+    border:1px solid #333;
+    background:#181818;
+    color:white;
+    outline:none;
+    font-size:14px;
+}
+
+.field input:focus,
+.field select:focus{
+    border-color:#d4af37;
+}
+
+.mainBtn{
+    width:100%;
+    padding:15px;
+    border:0;
+    border-radius:13px;
+    background:linear-gradient(135deg,#f2d36b,#b88a16);
+    color:#080808;
+    font-weight:bold;
+    font-size:15px;
+    margin-top:5px;
+}
+
+.adminBtn{
+    width:100%;
+    padding:13px;
+    margin-top:12px;
+    border:1px solid #51430f;
+    border-radius:13px;
+    background:#17150d;
+    color:#d4af37;
+}
+
+.backBtn{
+    width:100%;
+    padding:13px;
+    margin-top:10px;
+    border:1px solid #333;
+    border-radius:13px;
+    background:#191919;
+    color:#aaa;
+}
+
+.message{
+    min-height:22px;
+    text-align:center;
+    font-size:13px;
+    margin:12px 0;
+}
+
+.success{
+    color:#63e68a;
+}
+
+.error{
+    color:#ff6b6b;
+}
+
+
+/* ================= USER APP ================= */
+
+#mainPage,
+#adminPage{
+    display:none;
+    min-height:100vh;
+    padding-bottom:85px;
+}
+
+.header{
+    padding:22px 18px 10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.header h2{
+    color:#d4af37;
+}
+
+.header span{
+    color:#aaa;
+    font-size:12px;
+}
+
+.content{
+    padding:10px 16px;
+}
+
+.hero{
+    background:linear-gradient(135deg,#352a09,#17130a);
+    border:1px solid #4d3c0d;
+    border-radius:22px;
+    padding:22px;
+    margin-bottom:18px;
+}
+
+.hero small{
+    color:#c9ad4e;
+}
+
+.hero h2{
+    margin:10px 0;
+}
+
+.hero p{
+    color:#aaa;
+    font-size:13px;
+    line-height:1.8;
+}
+
+.card{
+    background:#121212;
+    border:1px solid #282828;
+    border-radius:18px;
+    padding:17px;
+    margin-bottom:13px;
+}
+
+.cardTop{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+}
+
+.badge{
+    background:#d4af37;
+    color:#000;
+    padding:5px 9px;
+    border-radius:8px;
+    font-size:11px;
+    font-weight:bold;
+}
+
+.price{
+    color:#d4af37;
+    font-weight:bold;
+    margin-top:8px;
+}
+
+.card p{
+    color:#999;
+    font-size:12px;
+    margin-top:8px;
+}
+
+.buyBtn{
+    width:100%;
+    padding:12px;
+    margin-top:13px;
+    border:0;
+    border-radius:11px;
+    background:#d4af37;
+    color:#000;
+    font-weight:bold;
+}
+
+.page{
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+.profileBox{
+    text-align:center;
+    padding:25px;
+}
+
+.avatar{
+    width:75px;
+    height:75px;
+    border-radius:50%;
+    background:#d4af37;
+    color:#000;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin:0 auto 15px;
+    font-size:30px;
+    font-weight:bold;
+}
+
+.logout{
+    width:100%;
+    margin-top:20px;
+    padding:13px;
+    border:1px solid #7b2424;
+    border-radius:12px;
+    background:#220f0f;
+    color:#ff7777;
+}
+
+.nav{
+    position:fixed;
+    bottom:0;
+    left:50%;
+    transform:translateX(-50%);
+    width:min(480px,100%);
+    background:#111;
+    border-top:1px solid #292929;
+    display:flex;
+    justify-content:space-around;
+    padding:10px 4px;
+    z-index:20;
+}
+
+.nav button{
+    background:none;
+    border:0;
+    color:#777;
+    font-size:11px;
+}
+
+.nav button.active{
+    color:#d4af37;
+}
+
+
+/* ================= ADMIN ================= */
+
+.adminHeader{
+    padding:20px 16px;
+    border-bottom:1px solid #282828;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.adminHeader h2{
+    color:#d4af37;
+}
+
+.adminHeader small{
+    color:#888;
+}
+
+.adminContent{
+    padding:16px;
+}
+
+.adminGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-bottom:18px;
+}
+
+.stat{
+    background:#121212;
+    border:1px solid #292929;
+    border-radius:17px;
+    padding:17px;
+}
+
+.stat small{
+    color:#888;
+}
+
+.stat strong{
+    display:block;
+    color:#d4af37;
+    font-size:28px;
+    margin-top:8px;
+}
+
+.adminTabs{
+    display:flex;
+    gap:7px;
+    overflow-x:auto;
+    margin-bottom:15px;
+}
+
+.adminTabs button{
+    white-space:nowrap;
+    padding:10px 13px;
+    border:1px solid #333;
+    border-radius:10px;
+    background:#151515;
+    color:#aaa;
+}
+
+.adminTabs button.active{
+    background:#d4af37;
+    color:#000;
+}
+
+.adminSection{
+    display:none;
+}
+
+.adminSection.active{
+    display:block;
+}
+
+.userRow,
+.ticketRow{
+    background:#121212;
+    border:1px solid #292929;
+    border-radius:15px;
+    padding:14px;
+    margin-bottom:10px;
+}
+
+.userRow strong,
+.ticketRow strong{
+    display:block;
+    margin-bottom:7px;
+}
+
+.muted{
+    color:#888;
+    font-size:11px;
+    line-height:1.8;
+}
+
+.danger{
+    border:1px solid #762d2d !important;
+    background:#210e0e !important;
+    color:#ff7373 !important;
+}
+
+.smallBtn{
+    padding:8px 11px;
+    border:0;
+    border-radius:9px;
+    background:#d4af37;
+    color:#000;
+    font-size:11px;
+    margin-top:10px;
+}
+
+.adminForm{
+    background:#121212;
+    border:1px solid #292929;
+    border-radius:17px;
+    padding:16px;
+    margin-bottom:15px;
+}
+
+.empty{
+    text-align:center;
+    color:#777;
+    padding:30px 10px;
+}
+
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:360px){
+
+    .adminGrid{
+        grid-template-columns:1fr;
+    }
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- ==================================================
+     AUTH
+================================================== -->
+
+<section id="authPage">
+
+<div class="authBox">
+
+<div class="logo">
+    <h1>LUCKORA</h1>
+    <p>شانس خودت را امتحان کن</p>
+</div>
+
+
+<div id="authTabs" class="tabs">
+
+<button class="tab active"
+        id="loginTab"
+        type="button">
+    ورود
+</button>
+
+<button class="tab"
+        id="registerTab"
+        type="button">
+    ثبت نام
+</button>
+
+</div>
+
+
+<!-- LOGIN -->
+
+<form id="loginForm" class="form active">
+
+<div class="field">
+<label>شماره موبایل</label>
+
+<input
+    id="loginPhone"
+    type="tel"
+    inputmode="numeric"
+    placeholder="09123456789">
+</div>
+
+
+<div class="field">
+<label>رمز عبور</label>
+
+<input
+    id="loginPassword"
+    type="password"
+    placeholder="رمز عبور">
+</div>
+
+
+<div id="loginMessage"
+     class="message"></div>
+
+
+<button class="mainBtn"
+        type="submit">
+    ورود به LUCKORA
+</button>
+
+
+<button class="adminBtn"
+        id="openAdminLogin"
+        type="button">
+    🔐 ورود مدیر
+</button>
+
+</form>
+
+
+<!-- REGISTER -->
+
+<form id="registerForm" class="form">
+
+<div class="field">
+<label>نام و نام خانوادگی</label>
+
+<input
+    id="registerName"
+    type="text"
+    placeholder="مثلاً صابر عزیزی">
+</div>
+
+
+<div class="field">
+<label>شماره موبایل</label>
+
+<input
+    id="registerPhone"
+    type="tel"
+    inputmode="numeric"
+    placeholder="09123456789">
+</div>
+
+
+<div class="field">
+<label>رمز عبور</label>
+
+<input
+    id="registerPassword"
+    type="password"
+    placeholder="حداقل ۶ کاراکتر">
+</div>
+
+
+<div class="field">
+<label>تکرار رمز عبور</label>
+
+<input
+    id="registerPassword2"
+    type="password"
+    placeholder="تکرار رمز عبور">
+</div>
+
+
+<div id="registerMessage"
+     class="message"></div>
+
+
+<button class="mainBtn"
+        type="submit">
+    ایجاد حساب
+</button>
+
+</form>
+
+
+<!-- ADMIN LOGIN -->
+
+<form id="adminLoginForm"
+      class="form">
+
+<div class="field">
+<label>نام کاربری مدیر</label>
+
+<input
+    id="adminUsername"
+    type="text"
+    value=""
+    placeholder="نام کاربری">
+</div>
+
+
+<div class="field">
+<label>رمز مدیر</label>
+
+<input
+    id="adminPassword"
+    type="password"
+    placeholder="رمز مدیر">
+</div>
+
+
+<div id="adminLoginMessage"
+     class="message"></div>
+
+
+<button class="mainBtn"
+        type="submit">
+    ورود به پنل مدیریت
+</button>
+
+
+<button class="backBtn"
+        id="backToUserLogin"
+        type="button">
+    بازگشت
+</button>
+
+</form>
+
+</div>
+
+</section>
+
+
+<!-- ==================================================
+     USER APP
+================================================== -->
+
+<section id="mainPage">
+
+<header class="header">
+
+<div>
+<h2>LUCKORA</h2>
+<span id="welcomeUser"></span>
+</div>
+
+<span>🎟️</span>
+
+</header>
+
+
+<div class="content">
+
+
+<!-- HOME -->
+
+<div id="homePage"
+     class="page active">
+
+<div class="hero">
+
+<small>قرعه‌کشی ویژه</small>
+
+<h2>🚗 خودروی رویایی</h2>
+
+<p>
+در قرعه‌کشی شرکت کن و شانس خودت را برای
+برنده شدن امتحان کن.
+</p>
+
+<button class="buyBtn"
+        onclick="buyTicket()">
+خرید بلیت
+</button>
+
+</div>
+
+
+<div id="userDrawList"></div>
+
+</div>
+
+
+<!-- DRAWS -->
+
+<div id="drawsPage"
+     class="page">
+
+<h3 style="margin-bottom:15px">
+🎯 قرعه‌کشی‌ها
+</h3>
+
+<div id="drawsList"></div>
+
+</div>
+
+
+<!-- TICKETS -->
+
+<div id="ticketsPage"
+     class="page">
+
+<h3 style="margin-bottom:15px">
+🎟️ بلیت‌های من
+</h3>
+
+<div id="ticketsList"></div>
+
+</div>
+
+
+<!-- WINNERS -->
+
+<div id="winnersPage"
+     class="page">
+
+<h3 style="margin-bottom:15px">
+🏆 برندگان
+</h3>
+
+<div class="card">
+
+<strong>اعلام نتایج</strong>
+
+<p>
+نتایج قرعه‌کشی‌ها پس از برگزاری
+در این بخش نمایش داده می‌شود.
+</p>
+
+</div>
+
+</div>
+
+
+<!-- PROFILE -->
+
+<div id="profilePage"
+     class="page">
+
+<div class="card profileBox">
+
+<div class="avatar"
+     id="avatar">
+</div>
+
+<h3 id="profileName"></h3>
+
+<p id="profilePhone"></p>
+
+<p style="margin-top:12px">
+تعداد بلیت‌ها:
+<strong id="ticketCount">0</strong>
+</p>
+
+
+<button class="logout"
+        id="logoutBtn"
+        type="button">
+خروج از حساب
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- USER NAV -->
+
+<nav class="nav">
+
+<button class="active"
+        data-page="homePage">
+🏠<br>خانه
+</button>
+
+<button data-page="drawsPage">
+🎯<br>قرعه‌کشی
+</button>
+
+<button data-page="ticketsPage">
+🎟️<br>بلیت من
+</button>
+
+<button data-page="winnersPage">
+🏆<br>برندگان
+</button>
+
+<button data-page="profilePage">
+👤<br>پروفایل
+</button>
+
+</nav>
+
+</section>
+
+
+<!-- ==================================================
+     ADMIN PANEL
+================================================== -->
+
+<section id="adminPage">
+
+<header class="adminHeader">
+
+<div>
+<h2>LUCKORA ADMIN</h2>
+<small>پنل مدیریت</small>
+</div>
+
+<span>🔐</span>
+
+</header>
+
+
+<div class="adminContent">
+
+
+<!-- STATS -->
+
+<div class="adminGrid">
+
+<div class="stat">
+<small>کاربران</small>
+<strong id="statUsers">0</strong>
+</div>
+
+<div class="stat">
+<small>بلیت‌ها</small>
+<strong id="statTickets">0</strong>
+</div>
+
+<div class="stat">
+<small>قرعه‌کشی‌ها</small>
+<strong id="statDraws">0</strong>
+</div>
+
+<div class="stat">
+<small>برندگان</small>
+<strong id="statWinners">0</strong>
+</div>
+
+</div>
+
+
+<!-- ADMIN TABS -->
+
+<div class="adminTabs">
+
+<button class="active"
+        data-admin="dashboardSection">
+📊 داشبورد
+</button>
+
+<button data-admin="usersSection">
+👥 کاربران
+</button>
+
+<button data-admin="ticketsSection">
+🎟️ بلیت‌ها
+</button>
+
+<button data-admin="drawsSection">
+🎯 قرعه‌کشی‌ها
+</button>
+
+</div>
+
+
+<!-- DASHBOARD -->
+
+<div id="dashboardSection"
+     class="adminSection active">
+
+<div class="card">
+
+<h3>📊 وضعیت سیستم</h3>
+
+<p>
+پنل مدیریت LUCKORA فعال است.
+</p>
+
+<p>
+از این بخش می‌توانی کاربران،
+بلیت‌ها و قرعه‌کشی‌ها را مدیریت کنی.
+</p>
+
+</div>
+
+</div>
+
+
+<!-- USERS -->
+
+<div id="usersSection"
+     class="adminSection">
+
+<h3 style="margin-bottom:12px">
+👥 کاربران ثبت‌نام‌شده
+</h3>
+
+<div id="adminUsersList"></div>
+
+</div>
+
+
+<!-- TICKETS -->
+
+<div id="ticketsSection"
+     class="adminSection">
+
+<h3 style="margin-bottom:12px">
+🎟️ تمام بلیت‌ها
+</h3>
+
+<div id="adminTicketsList"></div>
+
+</div>
+
+
+<!-- DRAWS -->
+
+<div id="drawsSection"
+     class="adminSection">
+
+<div class="adminForm">
+
+<h3 style="margin-bottom:15px">
+➕ ایجاد قرعه‌کشی
+</h3>
+
+
+<div class="field">
+
+<label>عنوان قرعه‌کشی</label>
+
+<input
+    id="drawTitle"
+    type="text"
+    placeholder="مثلاً قرعه‌کشی خودروی ویژه">
+
+</div>
+
+
+<div class="field">
+
+<label>جایزه</label>
+
+<input
+    id="drawPrize"
+    type="text"
+    placeholder="مثلاً خودرو">
+
+</div>
+
+
+<div class="field">
+
+<label>قیمت بلیت</label>
+
+<input
+    id="drawPrice"
+    type="number"
+    inputmode="numeric"
+    placeholder="50000">
+
+</div>
+
+
+<div class="field">
+
+<label>تاریخ پایان</label>
+
+<input
+    id="drawDate"
+    type="datetime-local">
+
+</div>
+
+
+<div id="drawMessage"
+     class="message"></div>
+
+
+<button class="mainBtn"
+        id="createDrawBtn"
+        type="button">
+    ایجاد قرعه‌کشی
+</button>
+
+</div>
+
+
+<h3 style="margin-bottom:12px">
+🎯 قرعه‌کشی‌های موجود
+</h3>
+
+<div id="adminDrawsList"></div>
+
+</div>
+
+
+<!-- LOGOUT ADMIN -->
+
+<button class="logout"
+        id="adminLogout"
+        type="button">
+خروج از پنل مدیریت
+</button>
+
+
+</div>
+
+</section>
+
+</div>
+
+
+<script>
+
+/* ==================================================
+   STORAGE KEYS
+================================================== */
+
+const USERS_KEY =
+    "luckoraUsers";
+
+const CURRENT_USER_KEY =
+    "luckoraCurrentUser";
+
+const TICKETS_KEY =
+    "luckoraTickets";
+
+const DRAWS_KEY =
+    "luckoraDraws";
+
+const ADMIN_KEY =
+    "luckoraAdmin";
+
+
+/* ==================================================
+   STORAGE HELPERS
+================================================== */
+
+function getUsers(){
+
+    try{
+
+        const data =
+            localStorage.getItem(USERS_KEY);
+
+        if(!data) return [];
+
+        const users =
+            JSON.parse(data);
+
+        return Array.isArray(users)
+            ? users
+            : [];
+
+    }catch(e){
+
+        return [];
+    }
+}
+
+
+function saveUsers(users){
+
+    localStorage.setItem(
+        USERS_KEY,
+        JSON.stringify(users)
+    );
+
+}
+
+
+function getTickets(){
+
+    try{
+
+        const data =
+            localStorage.getItem(TICKETS_KEY);
+
+        if(!data) return [];
+
+        const tickets =
+            JSON.parse(data);
+
+        return Array.isArray(tickets)
+            ? tickets
+            : [];
+
+    }catch(e){
+
+        return [];
+    }
+
+}
+
+
+function saveTickets(tickets){
+
+    localStorage.setItem(
+        TICKETS_KEY,
+        JSON.stringify(tickets)
+    );
+
+}
+
+
+function getDraws(){
+
+    try{
+
+        const data =
+            localStorage.getItem(DRAWS_KEY);
+
+        if(!data) return [];
+
+        const draws =
+            JSON.parse(data);
+
+        return Array.isArray(draws)
+            ? draws
+            : [];
+
+    }catch(e){
+
+        return [];
+    }
+
+}
+
+
+function saveDraws(draws){
+
+    localStorage.setItem(
+        DRAWS_KEY,
+        JSON.stringify(draws)
+    );
+
+}
+
+
+function makeId(){
+
+    return Date.now().toString(36)
+        +
+        Math.random()
+        .toString(36)
+        .substring(2,8);
+
+}
+
+
+/* ==================================================
+   DIGIT / PHONE
+================================================== */
+
+function normalizeDigits(value){
+
+    return String(value || "")
+    .replace(/[۰-۹]/g,function(d){
+
+        return String(
+            "۰۱۲۳۴۵۶۷۸۹".indexOf(d)
+        );
+
+    })
+    .replace(/[٠-٩]/g,function(d){
+
+        return String(
+            "٠١٢٣٤٥٦٧٨٩".indexOf(d)
+        );
+
+    });
+
+}
+
+
+function normalizePhone(value){
+
+    let phone =
+        normalizeDigits(value);
+
+    phone =
+        phone
+        .replace(/\s/g,"")
+        .replace(/-/g,"")
+        .replace(/\(/g,"")
+        .replace(/\)/g,"");
+
+    if(phone.startsWith("+98")){
+
+        phone =
+            "0" +
+            phone.substring(3);
+
+    }
+
+    return phone;
+
+}
+
+
+/* ==================================================
+   AUTH TABS
+================================================== */
+
+const loginTab =
+    document.getElementById("loginTab");
+
+const registerTab =
+    document.getElementById("registerTab");
+
+const loginForm =
+    document.getElementById("loginForm");
+
+const registerForm =
+    document.getElementById("registerForm");
+
+const adminLoginForm =
+    document.getElementById("adminLoginForm");
+
+
+function clearMessages(){
+
+    document.getElementById(
+        "loginMessage"
+    ).textContent = "";
+
+    document.getElementById(
+        "registerMessage"
+    ).textContent = "";
+
+    document.getElementById(
+        "adminLoginMessage"
+    ).textContent = "";
+
+}
+
+
+loginTab.addEventListener(
+    "click",
+    function(){
+
+        loginTab.classList.add("active");
+
+        registerTab.classList.remove("active");
+
+        loginForm.classList.add("active");
+
+        registerForm.classList.remove("active");
+
+        adminLoginForm.classList.remove("active");
+
+        clearMessages();
+
+    }
+);
+
+
+registerTab.addEventListener(
+    "click",
+    function(){
+
+        registerTab.classList.add("active");
+
+        loginTab.classList.remove("active");
+
+        registerForm.classList.add("active");
+
+        loginForm.classList.remove("active");
+
+        adminLoginForm.classList.remove("active");
+
+        clearMessages();
+
+    }
+);
+
+
+/* ==================================================
+   REGISTER
+================================================== */
+
+registerForm.addEventListener(
+    "submit",
+    function(event){
+
+        event.preventDefault();
+
+        const message =
+            document.getElementById(
+                "registerMessage"
+            );
+
+        try{
+
+            const name =
+                document.getElementById(
+                    "registerName"
+                ).value.trim();
+
+            const phone =
+                normalizePhone(
+                    document.getElementById(
+                        "registerPhone"
+                    ).value
+                );
+
+            const password =
+                document.getElementById(
+                    "registerPassword"
+                ).value;
+
+            const password2 =
+                document.getElementById(
+                    "registerPassword2"
+                ).value;
+
+
+            if(name.length < 2){
+
+                showError(
+                    message,
+                    "لطفاً نام خود را وارد کنید."
+                );
+
+                return;
+            }
+
+
+            if(!/^09\d{9}$/.test(phone)){
+
+                showError(
+                    message,
+                    "شماره موبایل صحیح نیست."
+                );
+
+                return;
+            }
+
+
+            if(password.length < 6){
+
+                showError(
+                    message,
+                    "رمز باید حداقل ۶ کاراکتر باشد."
+                );
+
+                return;
+            }
+
+
+            if(password !== password2){
+
+                showError(
+                    message,
+                    "رمزها یکسان نیستند."
+                );
+
+                return;
+            }
+
+
+            const users =
+                getUsers();
+
+
+            if(
+                users.some(
+                    u => u.phone === phone
+                )
+            ){
+
+                showError(
+                    message,
+     "این شماره قبلاً ثبت شده است."
+                );
+
+                return;
+            }
+
+
+            const user = {
+
+                id:makeId(),
+
+                name:name,
+
+                phone:phone,
+
+                password:password,
+
+                createdAt:
+                    new Date().toISOString()
+
+            };
+
+
+            users.push(user);
+
+            saveUsers(users);
+
+
+            localStorage.setItem(
+                CURRENT_USER_KEY,
+                user.id
+            );
+
+
+            message.className =
+                "message success";
+
+            message.textContent =
+                "✅ حساب با موفقیت ساخته شد.";
+
+
+            setTimeout(
+                () => openUserApp(user),
+                400
+            );
+
+        }catch(error){
+
+            showError(
+                message,
+                "خطا: " + error.message
+            );
+
+        }
+
+    }
+);
+
+
+/* ==================================================
+   USER LOGIN
+================================================== */
+
+loginForm.addEventListener(
+    "submit",
+    function(event){
+
+        event.preventDefault();
+
+        const message =
+            document.getElementById(
+                "loginMessage"
+            );
+
+
+        const phone =
+            normalizePhone(
+                document.getElementById(
+                    "loginPhone"
+                ).value
+            );
+
+        const password =
+            document.getElementById(
+                "loginPassword"
+            ).value;
+
+
+        const user =
+            getUsers().find(
+                u =>
+                    u.phone === phone &&
+                    u.password === password
+            );
+
+
+        if(!user){
+
+            showError(
+                message,
+                "شماره یا رمز عبور اشتباه است."
+            );
+
+            return;
+        }
+
+
+        localStorage.setItem(
+            CURRENT_USER_KEY,
+            user.id
+        );
+
+
+        openUserApp(user);
+
+    }
+);
+
+
+/* ==================================================
+   ADMIN LOGIN
+================================================== */
+
+document.getElementById(
+    "openAdminLogin"
+).addEventListener(
+    "click",
+    function(){
+
+        loginForm.classList.remove("active");
+
+        registerForm.classList.remove("active");
+
+        document.getElementById(
+            "authTabs"
+        ).style.display = "none";
+
+        adminLoginForm.classList.add("active");
+
+        clearMessages();
+
+    }
+);
+
+
+document.getElementById(
+    "backToUserLogin"
+).addEventListener(
+    "click",
+    function(){
+
+        adminLoginForm.classList.remove("active");
+
+        loginForm.classList.add("active");
+
+        document.getElementById(
+            "authTabs"
+        ).style.display = "flex";
+
+        clearMessages();
+
+    }
+);
+
+
+adminLoginForm.addEventListener(
+    "submit",
+    function(event){
+
+        event.preventDefault();
+
+
+        const username =
+            document.getElementById(
+                "adminUsername"
+            ).value.trim();
+
+        const password =
+            document.getElementById(
+                "adminPassword"
+            ).value;
+
+
+        /*
+          DEMO ADMIN
+          برای نسخه واقعی باید
+          احراز هویت سمت سرور باشد.
+        */
+
+        if(
+            username === "admin" &&
+            password === "123456"
+        ){
+
+            localStorage.setItem(
+                ADMIN_KEY,
+                "true"
+            );
+
+            openAdmin();
+
+        }else{
+
+            showError(
+                document.getElementById(
+                    "adminLoginMessage"
+                ),
+                "نام کاربری یا رمز مدیر اشتباه است."
+            );
+
+        }
+
+    }
+);
+
+
+/* ==================================================
+   MESSAGE
+================================================== */
+
+function showError(element,text){
+
+    element.className =
+        "message error";
+
+    element.textContent =
+        text;
+
+}
+
+
+/* ==================================================
+   CURRENT USER
+================================================== */
+
+function getCurrentUser(){
+
+    const id =
+        localStorage.getItem(
+            CURRENT_USER_KEY
+        );
+
+    if(!id) return null;
+
+    return getUsers().find(
+        u => u.id === id
+    ) || null;
+
+}
+
+
+/* ==================================================
+   USER APP
+================================================== */
+
+function openUserApp(user){
+
+    document.getElementById(
+        "authPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "adminPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "mainPage"
+    ).style.display = "block";
+
+
+    document.getElementById(
+        "welcomeUser"
+    ).textContent =
+        "سلام " + user.name;
+
+
+    document.getElementById(
+        "profileName"
+    ).textContent =
+        user.name;
+
+
+    document.getElementById(
+        "profilePhone"
+    ).textContent =
+        user.phone;
+
+
+    document.getElementById(
+        "avatar"
+    ).textContent =
+        user.name.charAt(0);
+
+
+    renderUserDraws();
+
+    updateTickets();
+
+    updateProfile();
+
+}
+
+
+/* ==================================================
+   USER LOGOUT
+================================================== */
+
+document.getElementById(
+    "logoutBtn"
+).addEventListener(
+    "click",
+    function(){
+
+        localStorage.removeItem(
+            CURRENT_USER_KEY
+        );
+
+        document.getElementById(
+            "mainPage"
+        ).style.display = "none";
+
+        document.getElementById(
+            "authPage"
+        ).style.display = "flex";
+
+        loginForm.reset();
+
+        registerForm.reset();
+
+    }
+);
+
+
+/* ==================================================
+   USER NAVIGATION
+================================================== */
+
+document.querySelectorAll(
+    ".nav button"
+).forEach(
+    function(button){
+
+        button.addEventListener(
+            "click",
+            function(){
+
+                const target =
+                    button.dataset.page;
+
+
+                document.querySelectorAll(
+                    ".page"
+                ).forEach(
+                    page =>
+                        page.classList.remove(
+                            "active"
+                        )
+                );
+
+
+                document.getElementById(
+                    target
+                ).classList.add(
+                    "active"
+                );
+
+
+                document.querySelectorAll(
+                    ".nav button"
+                ).forEach(
+                    btn =>
+                        btn.classList.remove(
+                            "active"
+                        )
+                );
+
+
+                button.classList.add(
+                    "active"
+                );
+
+
+                if(
+                    target === "ticketsPage"
+                ){
+
+                    updateTickets();
+
+                }
+
+            }
+        );
+
+    }
+);
+
+
+/* ==================================================
+   DEFAULT DRAW
+================================================== */
+
+function ensureDefaultDraw(){
+
+    const draws =
+        getDraws();
+
+
+    if(draws.length === 0){
+
+        draws.push({
+
+            id:"default-car",
+
+            title:"قرعه‌کشی خودروی ویژه",
+
+            prize:"خودروی ویژه",
+
+            price:50000,
+
+            date:"",
+
+            active:true,
+
+            createdAt:
+                new Date().toISOString()
+
+        });
+
+
+        saveDraws(draws);
+
+    }
+
+}
+
+
+/* ==================================================
+   USER DRAW LIST
+================================================== */
+
+function renderUserDraws(){
+
+    ensureDefaultDraw();
+
+
+    const draws =
+        getDraws().filter(
+            d => d.active !== false
+        );
+
+
+    const html =
+        draws.map(
+            draw => `
+
+            <div class="card">
+
+                <div class="cardTop">
+
+                    <strong>
+                        ${escapeHTML(draw.title)}
+                    </strong>
+
+                    <span class="badge">
+                        فعال
+                    </span>
+
+                </div>
+
+                <div class="price">
+                    ${Number(draw.price || 0).toLocaleString("fa-IR")}
+                    تومان
+                </div>
+
+                <p>
+                    جایزه:
+                    ${escapeHTML(draw.prize)}
+                </p>
+
+                <button
+                    class="buyBtn"
+                    onclick="buyTicket('${draw.id}')">
+
+                    🎟️ خرید بلیت
+
+                </button>
+
+            </div>
+
+        `
+        ).join("");
+
+
+    document.getElementById(
+        "userDrawList"
+    ).innerHTML =
+        html || `
+            <div class="empty">
+                قرعه‌کشی فعالی وجود ندارد.
+            </div>
+        `;
+
+
+    document.getElementById(
+        "drawsList"
+    ).innerHTML =
+        html || `
+            <div class="empty">
+                قرعه‌کشی فعالی وجود ندارد.
+            </div>
+        `;
+
+}
+
+
+/* ==================================================
+   BUY TICKET
+================================================== */
+
+function buyTicket(drawId){
+
+    const user =
+        getCurrentUser();
+
+
+    if(!user){
+
+        alert(
+            "ابتدا وارد حساب شوید."
+        );
+
+        return;
+
+    }
+
+
+    ensureDefaultDraw();
+
+
+    const draws =
+        getDraws();
+
+
+    const draw =
+        draws.find(
+            d => d.id === drawId
+        )
+        ||
+        draws[0];
+
+
+    const tickets =
+        getTickets();
+
+
+    const ticket = {
+
+        id:makeId(),
+
+        userId:user.id,
+
+        drawId:draw.id,
+
+        drawTitle:draw.title,
+
+        number:
+            Math.floor(
+                100000 +
+                Math.random()*900000
+            ),
+
+        price:Number(draw.price || 0),
+
+        createdAt:
+            new Date().toLocaleString(
+                "fa-IR"
+            )
+
+    };
+
+
+    tickets.push(ticket);
+
+    saveTickets(tickets);
+
+
+    alert(
+        "🎟️ بلیت ثبت شد!\n\n" +
+        "شماره بلیت: " +
+        ticket.number
+    );
+
+
+    updateTickets();
+
+    updateProfile();
+
+}
+
+
+/* ==================================================
+   USER TICKETS
+================================================== */
+
+function updateTickets(){
+
+    const user =
+        getCurrentUser();
+
+    if(!user) return;
+
+
+    const tickets =
+        getTickets().filter(
+            t => t.userId === user.id
+        );
+
+
+    document.getElementById(
+        "ticketCount"
+    ).textContent =
+        tickets.length;
+
+
+    const list =
+        document.getElementById(
+            "ticketsList"
+        );
+
+
+    if(tickets.length === 0){
+
+        list.innerHTML = `
+            <div class="empty">
+                هنوز بلیتی ندارید.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    list.innerHTML =
+        tickets.map(
+            ticket => `
+
+            <div class="card">
+
+                <div class="cardTop">
+
+                    <strong>
+                        🎟️ ${ticket.number}
+                    </strong>
+
+                    <span class="badge">
+                        ثبت شده
+                    </span>
+
+                </div>
+
+                <p>
+                    ${escapeHTML(
+                        ticket.drawTitle
+                    )}
+                </p>
+
+                <p>
+                    قیمت:
+                    ${Number(
+                        ticket.price || 0
+                    ).toLocaleString("fa-IR")}
+                    تومان
+                </p>
+
+                <p>
+                    ${ticket.createdAt}
+                </p>
+
+            </div>
+
+        `
+        ).join("");
+
+}
+
+
+/* ==================================================
+   PROFILE
+================================================== */
+
+function updateProfile(){
+
+    const user =
+        getCurrentUser();
+
+    if(!user) return;
+
+
+    const count =
+        getTickets().filter(
+            t => t.userId === user.id
+        ).length;
+
+
+    document.getElementById(
+        "ticketCount"
+    ).textContent =
+        count;
+
+}
+
+
+/* ==================================================
+   ADMIN OPEN
+================================================== */
+
+function openAdmin(){
+
+    document.getElementById(
+        "authPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "mainPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "adminPage"
+    ).style.display = "block";
+
+
+    ensureDefaultDraw();
+
+    renderAdmin();
+
+}
+
+
+/* ==================================================
+   ADMIN RENDER
+================================================== */
+
+function renderAdmin(){
+
+    const users =
+        getUsers();
+
+    const tickets =
+        getTickets();
+
+    const draws =
+        getDraws();
+
+
+    document.getElementById(
+        "statUsers"
+    ).textContent =
+        users.length;
+
+
+    document.getElementById(
+        "statTickets"
+    ).textContent =
+        tickets.length;
+
+
+    document.getElementById(
+        "statDraws"
+    ).textContent =
+        draws.length;
+
+
+    document.getElementById(
+        "statWinners"
+    ).textContent =
+        "0";
+
+
+    renderAdminUsers();
+
+    renderAdminTickets();
+
+    renderAdminDraws();
+
+}
+
+
+/* ==================================================
+   ADMIN TABS
+================================================== */
+
+document.querySelectorAll(
+    ".adminTabs button"
+).forEach(
+    button => {
+
+        button.addEventListener(
+            "click",
+            function(){
+
+                document.querySelectorAll(
+                    ".adminTabs button"
+                ).forEach(
+                    b =>
+                        b.classList.remove(
+                            "active"
+                        )
+                );
+
+
+                button.classList.add(
+                    "active"
+                );
+
+
+                document.querySelectorAll(
+                    ".adminSection"
+                ).forEach(
+                    section =>
+                        section.classList.remove(
+                            "active"
+                        )
+                );
+
+
+                document.getElementById(
+                    button.dataset.admin
+                ).classList.add(
+                    "active"
+                );
+
+            }
+        );
+
+    }
+);
+
+
+/* ==================================================
+   ADMIN USERS
+================================================== */
+
+function renderAdminUsers(){
+
+    const users =
+        getUsers();
+
+
+    const list =
+        document.getElementById(
+            "adminUsersList"
+        );
+
+
+    if(users.length === 0){
+
+        list.innerHTML = `
+            <div class="empty">
+                کاربری وجود ندارد.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    list.innerHTML =
+        users.map(
+            (user,index) => {
+
+                const ticketCount =
+                    getTickets().filter(
+                        t =>
+                            t.userId === user.id
+                    ).length;
+
+
+                return `
+
+                <div class="userRow">
+
+                    <strong>
+                        👤 ${escapeHTML(user.name)}
+                    </strong>
+
+                    <div class="muted">
+                        موبایل:
+                        ${escapeHTML(user.phone)}
+                    </div>
+
+                    <div class="muted">
+                        تعداد بلیت:
+                        ${ticketCount}
+                    </div>
+
+                    <div class="muted">
+                        کاربر شماره:
+                        ${index + 1}
+                    </div>
+
+                    <button
+                        class="smallBtn danger"
+                        onclick="deleteUser('${user.id}')">
+
+                        حذف کاربر
+
+                    </button>
+
+                </div>
+
+                `;
+
+            }
+        ).join("");
+
+}
+
+
+/* ==================================================
+   DELETE USER
+================================================== */
+
+function deleteUser(userId){
+
+    const user =
+        getUsers().find(
+            u => u.id === userId
+        );
+
+
+    if(!user) return;
+
+
+    const ok =
+        confirm(
+            "آیا از حذف کاربر " +
+            user.name +
+            " مطمئن هستید؟\n\n" +
+            "بلیت‌های این کاربر نیز حذف می‌شوند."
+        );
+
+
+    if(!ok) return;
+
+
+    const users =
+        getUsers().filter(
+            u => u.id !== userId
+        );
+
+
+    saveUsers(users);
+
+
+    const tickets =
+        getTickets().filter(
+            t => t.userId !== userId
+        );
+
+
+    saveTickets(tickets);
+
+
+    renderAdmin();
+
+}
+
+
+/* ==================================================
+   ADMIN TICKETS
+================================================== */
+
+function renderAdminTickets(){
+
+    const tickets =
+        getTickets();
+
+
+    const users =
+        getUsers();
+
+
+    const list =
+        document.getElementById(
+            "adminTicketsList"
+        );
+
+
+    if(tickets.length === 0){
+
+        list.innerHTML = `
+            <div class="empty">
+                هنوز بلیتی ثبت نشده است.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    list.innerHTML =
+        tickets.map(
+            ticket => {
+
+                const user =
+                    users.find(
+                        u =>
+                            u.id === ticket.userId
+                    );
+
+
+                return `
+
+                <div class="ticketRow">
+
+                    <strong>
+                        🎟️ بلیت ${ticket.number}
+                    </strong>
+
+                    <div class="muted">
+                        کاربر:
+                        ${
+                            user
+                            ? escapeHTML(user.name)
+                            : "نامشخص"
+                        }
+                    </div>
+
+                    <div class="muted">
+                        موبایل:
+                        ${
+                            user
+                            ? escapeHTML(user.phone)
+                            : "-"
+                        }
+                    </div>
+
+                    <div class="muted">
+                        قرعه‌کشی:
+                        ${escapeHTML(
+                            ticket.drawTitle || "-"
+                        )}
+                    </div>
+
+                    <div class="muted">
+                        قیمت:
+                        ${Number(
+                            ticket.price || 0
+                        ).toLocaleString("fa-IR")}
+                        تومان
+                    </div>
+
+                    <div class="muted">
+                        ثبت:
+                        ${ticket.createdAt || "-"}
+                    </div>
+
+                </div>
+
+                `;
+
+            }
+        ).join("");
+
+}
+
+
+/*
+==================================================
+   CREATE DRAW
+================================================== */
+
+document.getElementById(
+    "createDrawBtn"
+).addEventListener(
+    "click",
+    function(){
+
+        const title =
+            document.getElementById(
+                "drawTitle"
+            ).value.trim();
+
+
+        const prize =
+            document.getElementById(
+                "drawPrize"
+            ).value.trim();
+
+
+        const price =
+            Number(
+                document.getElementById(
+                    "drawPrice"
+                ).value
+            );
+
+
+        const date =
+            document.getElementById(
+                "drawDate"
+            ).value;
+
+
+        const message =
+            document.getElementById(
+                "drawMessage"
+            );
+
+
+        if(!title){
+
+            showError(
+                message,
+                "عنوان قرعه‌کشی را وارد کنید."
+            );
+
+            return;
+
+        }
+
+
+        if(!prize){
+
+            showError(
+                message,
+                "جایزه را وارد کنید."
+            );
+
+            return;
+
+        }
+
+
+        if(!price || price <= 0){
+
+            showError(
+                message,
+                "قیمت بلیت معتبر نیست."
+            );
+
+            return;
+
+        }
+
+
+        const draws =
+            getDraws();
+
+
+        draws.push({
+
+            id:makeId(),
+
+            title:title,
+
+            prize:prize,
+
+            price:price,
+
+            date:date,
+
+            active:true,
+
+            createdAt:
+                new Date().toISOString()
+
+        });
+
+
+        saveDraws(draws);
+
+
+        message.className =
+            "message success";
+
+        message.textContent =
+            "✅ قرعه‌کشی ایجاد شد.";
+
+
+        document.getElementById(
+            "drawTitle"
+        ).value = "";
+
+        document.getElementById(
+            "drawPrize"
+        ).value = "";
+
+        document.getElementById(
+            "drawPrice"
+        ).value = "";
+
+        document.getElementById(
+            "drawDate"
+        ).value = "";
+
+
+        renderAdmin();
+
+        renderUserDraws();
+
+    }
+);
+
+
+/* ==================================================
+   ADMIN DRAWS
+================================================== */
+
+function renderAdminDraws(){
+
+    const draws =
+        getDraws();
+
+
+    const list =
+        document.getElementById(
+            "adminDrawsList"
+        );
+
+
+    if(draws.length === 0){
+
+        list.innerHTML = `
+            <div class="empty">
+                قرعه‌کشی وجود ندارد.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    list.innerHTML =
+        draws.map(
+            draw => {
+
+                const ticketCount =
+                    getTickets().filter(
+                        t =>
+                            t.drawId === draw.id
+                    ).length;
+
+
+                return `
+
+                <div class="card">
+
+                    <div class="cardTop">
+
+                        <strong>
+                            ${escapeHTML(draw.title)}
+                        </strong>
+
+                        <span class="badge">
+                            ${
+                                draw.active !== false
+                                ? "فعال"
+                                : "غیرفعال"
+                            }
+                        </span>
+
+                    </div>
+
+                    <p>
+                        🏆 جایزه:
+                        ${escapeHTML(draw.prize)}
+                    </p>
+
+                    <p>
+                        🎟️ قیمت:
+                        ${Number(
+                            draw.price || 0
+                        ).toLocaleString("fa-IR")}
+                        تومان
+                    </p>
+
+                    <p>
+                        🎟️ تعداد بلیت:
+                        ${ticketCount}
+                    </p>
+
+                    ${
+                        draw.date
+                        ?
+                        `<p>
+                            ⏰ پایان:
+                            ${escapeHTML(draw.date)}
+                        </p>`
+                        :
+                        ""
+                    }
+
+
+                    <button
+                        class="smallBtn danger"
+                        onclick="deleteDraw('${draw.id}')">
+
+                        حذف قرعه‌کشی
+
+                    </button>
+
+                </div>
+
+                `;
+
+            }
+        ).join("");
+
+}
+
+
+/* ==================================================
+   DELETE DRAW
+================================================== */
+
+function deleteDraw(drawId){
+
+    const draw =
+        getDraws().find(
+            d => d.id === drawId
+        );
+
+
+    if(!draw) return;
+
+
+    const ok =
+        confirm(
+            "آیا از حذف این قرعه‌کشی مطمئن هستید؟"
+        );
+
+
+    if(!ok) return;
+
+
+    const draws =
+        getDraws().filter(
+            d => d.id !== drawId
+        );
+
+
+    saveDraws(draws);
+
+
+    renderAdmin();
+
+    renderUserDraws();
+
+}
+
+
+/* ==================================================
+   ADMIN LOGOUT
+================================================== */
+
+document.getElementById(
+    "adminLogout"
+).addEventListener(
+    "click",
+    function(){
+
+        localStorage.removeItem(
+            ADMIN_KEY
+        );
+
+
+        document.getElementById(
+            "adminPage"
+        ).style.display = "none";
+
+
+        document.getElementById(
+            "authPage"
+        ).style.display = "flex";
+
+
+        document.getElementById(
+            "authTabs"
+        ).style.display = "flex";
+
+
+        adminLoginForm.classList.remove(
+            "active"
+        );
+
+        loginForm.classList.add(
+            "active"
+        );
+
+
+        document.getElementById(
+            "adminUsername"
+        ).value = "";
+
+        document.getElementById(
+            "adminPassword"
+        ).value = "";
+
+    }
+);
+
+
+/* ==================================================
+   SECURITY HELPER
+================================================== */
+
+function escapeHTML(value){
+
+    return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+/* ==================================================
+   STARTUP
+================================================== */
+
+window.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        ensureDefaultDraw();
+
+
+        const currentUser =
+            getCurrentUser();
+
+
+        const isAdmin =
+            localStorage.getItem(
+                ADMIN_KEY
+            );
+
+
+        if(isAdmin === "true"){
+
+            openAdmin();
+
+            return;
+
+        }
+
+
+        if(currentUser){
+
+            openUserApp(
+                currentUser
+            );
+
+        }
+
+    }
+);
+
+</script>
+
+</body>
+</html>
